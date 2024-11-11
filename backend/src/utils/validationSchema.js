@@ -10,6 +10,14 @@ const signupSchema = z.object({
 const signInSchema = z.object({
   username: z.string().min(3).max(20),
   password: z.string().min(4).max(10),
-});
-
-export { signupSchema, signInSchema };
+})
+const updateUserSchema = z.object({
+  firstName: z.string().min(3).max(30),
+  lastName: z.string().min(3).max(30),
+  password: z.string().min(4).max(10),
+})
+export {
+  signupSchema,
+  signInSchema,
+  updateUserSchema
+};

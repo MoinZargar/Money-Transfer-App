@@ -38,7 +38,6 @@ const userSchema = new Schema(
             maxLength: 10
         },
         refreshToken : {
-            //Todo:
             //Refresh Token should be of type [String] inorder to handle multiple devices
             type : [String],
         }

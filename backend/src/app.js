@@ -24,8 +24,11 @@ app.use(upload.none());
 
 //import routes
 import userRouter from "./routes/user.route.js";
+import accountRouter from "./routes/account.router.js";
 
-app.use("/api/v1",userRouter);
+app.use("/api/v1/user",userRouter);
+app.use("/api/v1/account",accountRouter);
+
 // Error handling middleware 
 app.use(errorHandler);
 export default app;

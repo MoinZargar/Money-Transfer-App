@@ -1,5 +1,6 @@
 import { asyncHandler } from "../utils/aysncHandler.js"
-import { User } from "../models/user.model.js";
+import { User} from "../models/user.model.js";
+import { Account } from "../models/account.model.js";
 import { apiError } from "../utils/apiError.js";
 import { apiResponse } from "../utils/apiResponse.js"
 
@@ -24,13 +25,16 @@ const generateAccessAndRefreshToken = async (userId) => {
 }
 
 const signupUser = asyncHandler(async (req, res) => {
-   console.log(req.body)
    const { username, firstName, lastName, password } = req.body
-
+   username.trim()
+   firstName.trim()
+   lastName.trim()
+   password.trim()
+   
    //check if user already exits in database 
    const existedUser = await User.findOne({ username })
    if (existedUser) {
-      throw new apiError(409, "User with email or name already exists")
+      throw new apiError(409, "User with given username already exists")
    }
 
    //store user in database
@@ -49,7 +53,11 @@ const signupUser = asyncHandler(async (req, res) => {
    if (!createdUser) {
       throw new apiError(500, "Something went wrong while registering a user")
    }
-
+   //Create Bank Account for user after successful registration
+   await Account.create({
+      user: user._id,
+      balance: 1 + Math.random() * 10000,
+  })
    //return response to frontend
 
    return res.status(201).json(
@@ -63,7 +71,8 @@ const signInUser = asyncHandler(async (req, res) => {
    //get user details from frontend
 
    const { username, password } = req.body
-
+   username.trim()
+   password.trim()
 
    //check if user already exits in db
 
@@ -158,27 +167,27 @@ const signOutUser = asyncHandler(async (req, res) => {
 
 //Use RefreshAcessToken to get new access token and refresh token when acess token expires
 
-const refreshAccessToken=asyncHandler(async(req,res)=>{
+const refreshAccessToken = asyncHandler(async (req, res) => {
    try {
-      const incomingRefreshToken=req.cookies?.refreshToken || req.body?.refreshToken;
-      if(!incomingRefreshToken){
-          throw new apiError(401,"Unauthorized request")
+      const incomingRefreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
+      if (!incomingRefreshToken) {
+         throw new apiError(401, "Unauthorized request")
       }
-      const decodedToken=jwt.verify(incomingRefreshToken,process.env.REFRESH_TOKEN_SECRET);
-      const user=await User.findById(decodedToken._id);
-      
-      if(!user){
-          throw new apiError(401,"Invalid refresh token")
+      const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
+      const user = await User.findById(decodedToken._id);
+
+      if (!user) {
+         throw new apiError(401, "Invalid refresh token")
       }
       // Handle multiple devices login and multiple refresh tokens
-      const userRefreshTokens=user.refreshToken;
-      if(!userRefreshTokens.includes(incomingRefreshToken)){
-          throw new apiError(401,"Invalid refresh token")
+      const userRefreshTokens = user.refreshToken;
+      if (!userRefreshTokens.includes(incomingRefreshToken)) {
+         throw new apiError(401, "Invalid refresh token")
       }
-      const {newAccessToken,newRefreshToken}=await generateAccessAndRefreshToken(user._id);
-      const options={
-          httpOnly:true,
-          secure:true,
+      const { newAccessToken, newRefreshToken } = await generateAccessAndRefreshToken(user._id);
+      const options = {
+         httpOnly: true,
+         secure: true,
       }
       // Update user's refresh tokens to include the new one
       await User.findByIdAndUpdate(user._id, {
@@ -186,25 +195,67 @@ const refreshAccessToken=asyncHandler(async(req,res)=>{
          $addToSet: { refreshToken: newRefreshToken }
       });
       return res.status(200).
-      cookie("accessToken",newAccessToken,options).
-      cookie("refreshToken",newRefreshToken,options).
-      json(new apiResponse(200,
-          {
-              accessToken:newAccessToken,
-              refreshToken:newRefreshToken
-   
-          },
-          "Access Token refreshed successfully"))
+         cookie("accessToken", newAccessToken, options).
+         cookie("refreshToken", newRefreshToken, options).
+         json(new apiResponse(200,
+            {
+               accessToken: newAccessToken,
+               refreshToken: newRefreshToken
+
+            },
+            "Access Token refreshed successfully"))
    } catch (error) {
-      console.log("Refresh Token Expired error , jwt expired",error)
+      console.log("Refresh Token Expired error , jwt expired", error)
       throw new apiError(401, error?.message || "  Refresh Token Expired")
-      
+
    }
 })
+
+const updateUserAccount = asyncHandler(async (req, res) => {
+   const { firstName, lastName, password } = req.body
+   const user = await User.findById(req.user._id)
+   if (!user) {
+      throw new apiError(404, "User not found")
+   }
+   user.firstName = firstName || user.firstName
+   user.lastName = lastName || user.lastName
+   user.password = password || user.password
+   await user.save({ validateBeforeSave: false })
+   const updatedUser = await User.findById(req.user._id).select(
+      "-password -refreshToken"
+   )
+   return res.status(200).json(
+      new apiResponse(200, updatedUser, "User updated successfully")
+   )
+
+})
+
+const findUser = asyncHandler(async (req, res) => {
+   let filter = (req.query.filter || "").trim().toLowerCase();
+   const users = await User.find({
+      $or: [{
+         firstName: {
+            "$regex": filter
+         }
+      }, {
+         lastName: {
+            "$regex": filter
+         }
+      }]
+   }).select("-password -refreshToken");
+   if (users.length === 0) {
+      throw new apiError(404, "No users found with the given name");
+   }
+   return res.status(200).json(
+      new apiResponse(200, users, "Users found successfully")
+   );
+});
 
 export {
    signupUser,
    signInUser,
    signOutUser,
    refreshAccessToken,
+   updateUserAccount,
+   findUser,
 }
