@@ -5,9 +5,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button , InputBox } from "../index.js";
 import getAuthService from "../services/authService.js";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { login } from "../features/auth/authSlice.js";
 
 function SignupForm() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [error, setError] = useState(null);
   const {
     control,
@@ -25,6 +28,7 @@ function SignupForm() {
   const onSubmit = async(data) => {
      try {
         const response = await getAuthService.signup(data);
+        dispatch(login({userData:response}));
         navigate("/dashboard");
      } catch (error) {
         console.log(error.response?.data?.message);
@@ -103,7 +107,7 @@ function SignupForm() {
         <span className="text-red-500">{errors.password.message}</span>
       )}
       <div className="pt-4">
-        <Button label={"Sign up"} type={"submit"} />
+        <Button className={"w-full text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2"} label={"Sign up"} type={"submit"} />
       </div>
     </form>
   );

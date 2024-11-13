@@ -24,7 +24,6 @@ function App() {
   }, []);
 
   return !loading ? (
-
     <>
       <Header />
       <div className="px-8 py-2 min-h-screen flex flex-wrap content-between bg-gray-400">

@@ -10,6 +10,9 @@ import SendMoney from './pages/SendMoney';
 import Signin from './pages/Signin';
 import Signup from './pages/Signup';
 import Header from './components/Header';
+import Users from './components/Users';
+import User from './components/User';
+import Balance from './components/Balance';
 
 export {
     AuthLayout,
@@ -24,5 +27,8 @@ export {
     Signin,
     Signup,
     Header,
-    
+    Users,
+    User,
+    Balance,
+  
 }
