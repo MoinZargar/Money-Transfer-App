@@ -34,7 +34,7 @@ const signupUser = asyncHandler(async (req, res) => {
    //check if user already exits in database 
    const existedUser = await User.findOne({ username })
    if (existedUser) {
-      throw new apiError(409, "User with given username already exists")
+      throw new apiError(409, "username already exists")
    }
 
    //store user in database
@@ -58,11 +58,35 @@ const signupUser = asyncHandler(async (req, res) => {
       user: user._id,
       balance: 1 + Math.random() * 10000,
   })
-   //return response to frontend
 
-   return res.status(201).json(
-      new apiResponse(200, createdUser, "User registered successfully")
-   )
+    //generate access token and refresh token for user
+
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(createdUser._id)
+
+    //send tokens in cookies
+ 
+    //setting options so that cookies can't be modified on frontend
+ 
+    const options = {
+       httpOnly: true,
+       secure: true
+    }
+ 
+    //send response
+    res.status(200).
+       cookie("accessToken", accessToken, options).
+       cookie("refreshToken", refreshToken, options).
+       json(
+          new apiResponse(
+             200,
+             {
+                user: createdUser,
+                accessToken,
+                refreshToken
+             },
+             "User registered successfully"
+          )
+       )
 }
 )
 
@@ -87,7 +111,7 @@ const signInUser = asyncHandler(async (req, res) => {
    const isPasswordCorrect = await user.isPasswordCorrect(password)
 
    if (!isPasswordCorrect) {
-      throw new apiError(401, "Invalid user credentials")
+      throw new apiError(401, "Invalid username or password. Please try again.")
    }
 
    //generate access token and refresh token for user
@@ -163,6 +187,16 @@ const signOutUser = asyncHandler(async (req, res) => {
          )
       )
 
+})
+
+const getCurrentUser = asyncHandler(async (req, res) => {
+   const user = await User.findById(req.user._id).select("-password -refreshToken")
+   if (!user) {
+      throw new apiError(404, "Current User not found")
+   }
+   return res.status(200).json(
+      new apiResponse(200, user, "Current user details fetched successfully")
+   )
 })
 
 //Use RefreshAcessToken to get new access token and refresh token when acess token expires
@@ -255,6 +289,7 @@ export {
    signupUser,
    signInUser,
    signOutUser,
+   getCurrentUser,
    refreshAccessToken,
    updateUserAccount,
    findUser,

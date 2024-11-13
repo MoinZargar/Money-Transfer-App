@@ -8,9 +8,14 @@ import { errorHandler } from "./middlewares/errorHandler.middleware.js";
 const app = express();
 const upload = multer();
 
+dotenv.config({
+    path: '.env'
+});
+
 app.use(cors(
     {
         origin: process.env.CORS_ORIGIN,
+        methods: ["GET", "POST", "PUT", "DELETE"],
         credentials: true
     }
 ));
