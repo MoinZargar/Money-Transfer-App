@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import getAccountService from "../services/accountService";
+
 const useGetAccountBalance = () => {
   const [balance, setBalance] = useState(null);
   const [loading, setLoading] = useState(true);

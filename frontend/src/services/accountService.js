@@ -10,6 +10,14 @@ class account{
       throw error;
     }
   }
+  async transferMoney({to, amount}){
+    try {
+      const response = await axios.post(`${BACKEND_API_BASE_URL}/account/transfer`,{to, amount},{withCredentials:true});
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 const getAccountService= new account();

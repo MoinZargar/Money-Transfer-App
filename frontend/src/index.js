@@ -13,6 +13,7 @@ import Header from './components/Header';
 import Users from './components/Users';
 import User from './components/User';
 import Balance from './components/Balance';
+import Card from './components/Card';
 
 export {
     AuthLayout,
@@ -30,5 +31,6 @@ export {
     Users,
     User,
     Balance,
+    Card,
   
 }

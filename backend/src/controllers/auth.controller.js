@@ -56,7 +56,7 @@ const signupUser = asyncHandler(async (req, res) => {
    //Create Bank Account for user after successful registration
    await Account.create({
       user: user._id,
-      balance: 1 + Math.random() * 10000,
+      balance: (1 + Math.random() * 10000).toFixed(2),
   })
 
     //generate access token and refresh token for user
@@ -195,7 +195,11 @@ const getCurrentUser = asyncHandler(async (req, res) => {
       throw new apiError(404, "Current User not found")
    }
    return res.status(200).json(
-      new apiResponse(200, user, "Current user details fetched successfully")
+      new apiResponse(
+         200, 
+         {user:user}, 
+         "Current user details fetched successfully"
+      )
    )
 })
 
@@ -259,13 +263,20 @@ const updateUserAccount = asyncHandler(async (req, res) => {
       "-password -refreshToken"
    )
    return res.status(200).json(
-      new apiResponse(200, updatedUser, "User updated successfully")
+      new apiResponse(
+         200, 
+         {user: updatedUser}, 
+         "User updated successfully"
+      )
    )
 
 })
 
 const findUser = asyncHandler(async (req, res) => {
    let filter = (req.query.filter || "").trim().toLowerCase();
+   if (filter === "") {
+      throw new apiError(400, "Filter is required");
+   }
    const users = await User.find({
       $or: [{
          firstName: {
@@ -285,6 +296,17 @@ const findUser = asyncHandler(async (req, res) => {
    );
 });
 
+const findUserById = asyncHandler(async (req, res) => {
+   const userId = req.params.id;
+   const user = await User.findById(userId).select("-password -refreshToken");
+   if (!user) {
+      throw new apiError(404, "User not found");
+   }
+   return res.status(200).json(
+      new apiResponse(200, user, "User found successfully")
+   );
+});
+
 export {
    signupUser,
    signInUser,
@@ -293,4 +315,5 @@ export {
    refreshAccessToken,
    updateUserAccount,
    findUser,
+   findUserById,
 }

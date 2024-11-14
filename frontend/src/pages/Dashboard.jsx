@@ -5,9 +5,9 @@ import useGetAccountBalance from '../hooks/useGetAccountBalance.jsx'
 function Dashboard() {
   const {balance,loading,error} = useGetAccountBalance();
   return !loading ? ( 
-    <div>
-      <Balance value={balance} />
-      {/* <Users /> */}
+    <div className='pt-4'>
+      <Balance balance={balance} />
+      <Users />
     </div>
   ) : (<div>Loading...</div>)
 }

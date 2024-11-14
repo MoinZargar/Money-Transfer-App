@@ -38,7 +38,7 @@ const router = createBrowserRouter([
         )
       },
       {
-        path: "/send",
+        path: "/send-money/:id",
         element: (
           <AuthLayout authentication={true}>
             <SendMoney />

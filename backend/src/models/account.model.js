@@ -10,7 +10,8 @@ const accountSchema = new Schema(
         balance: {
             type: Number,
             required: true,
-            default: 0
+            default: 0,
+            set: v => Math.round(v * 100) / 100
         },
     },
     {
