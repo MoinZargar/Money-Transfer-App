@@ -7,7 +7,7 @@ import { logout } from "../features/auth/authSlice.js";
 
 const Header = () => {
   const user = useSelector((state) => state.auth.user);
-  const firstName = user.data?.user?.firstName;
+  const firstName = user?.data?.user?.firstName;
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const signout = async () => {

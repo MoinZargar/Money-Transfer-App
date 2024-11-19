@@ -6,13 +6,21 @@ import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import { Provider } from 'react-redux'
 import store from './store/store.js'
 import AuthLayout from './components/AuthLayout.jsx'
-import { Dashboard, SendMoney, Signin, Signup } from './index.js'
+import { Dashboard, SendMoney, Signin, Signup , Home } from './index.js'
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
     children: [
+      { 
+         path: "/",
+          element: (
+            <AuthLayout authentication={false}>
+              <Home />
+            </AuthLayout>
+          )
+      },
       {
         path: "/signup",
         element: (

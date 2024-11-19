@@ -25,12 +25,10 @@ const transferMoney = asyncHandler(async (req, res) => {
             throw new apiError(404, "Account not found");
         }
         if (account.balance < amount) {
-            await session.abortTransaction();
             throw new apiError(400, "Insufficient balance");
         }
         const toAccount = await Account.findOne({ user: to }).session(session);
         if (!toAccount) {
-            await session.abortTransaction();;
             throw new apiError(404, "Receiver account not found");
         }
         // Perform the transfer
@@ -41,7 +39,7 @@ const transferMoney = asyncHandler(async (req, res) => {
         res.status(200).json(new apiResponse(200, { message: "Transfer successful" }));
     } catch (error) {
         if (session) await session.abortTransaction();
-        throw new apiError(500, "Something went wrong while transferring money",error.message);
+        throw new apiError(error.statusCode || 500 ,error.message || "Internal server error");
     } finally {
         if (session) session.endSession();
     }

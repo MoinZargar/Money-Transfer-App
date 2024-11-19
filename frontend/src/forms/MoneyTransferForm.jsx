@@ -8,11 +8,13 @@ import { useState } from "react";
 
 function MoneyTransferForm({ userId, user }) {
   const navigate = useNavigate();
-  const [transferStatus, setTransferStatus] = useState(null); // Added state to track transfer status
+  const [transferStatus, setTransferStatus] = useState(null); 
+  const [error, setError] = useState(null); 
+  
   const handleRedirect = () => {
     navigate("/dashboard");
   }
-  
+
   const {
     control,
     handleSubmit,
@@ -31,16 +33,17 @@ function MoneyTransferForm({ userId, user }) {
       });
       setTransferStatus(
         `Transfer of Rs ${data.amount} to ${user} is successful`
-      ); // Set transfer status to success
+      ); 
+      setError(null); 
     } catch (error) {
-      console.error(error);
-      setTransferStatus(`Error: ${error.message}`); // Set transfer status to error
+      setError(error.response?.data?.message); 
     }
   };
   return (
     <>
       {!transferStatus ? (
         <form onSubmit={handleSubmit(onSubmit)}>
+          {error && <div className="text-red-500 mb-4">{error}</div>} 
           <Controller
             name="amount"
             control={control}

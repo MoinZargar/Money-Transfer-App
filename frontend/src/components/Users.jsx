@@ -1,21 +1,12 @@
 import { useEffect, useState } from "react";
 import { Button, InputBox, User } from "../index.js";
 import useGetUsers from "../hooks/useGetUsers.jsx";
+import useDebounce from "../hooks/useDebounce.jsx";
 
 const Users = () => {
   const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState(search);
-  let { users, loading, error } = useGetUsers(debouncedSearch);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearch(search);
-    }, 500);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [search]);
+  const debouncedSearch = useDebounce(search, 500);
+  const { users, loading, error } = useGetUsers(debouncedSearch);
 
   return (
     <>

@@ -22,7 +22,7 @@ export const verifyJwt =asyncHandler(async(req,_,next)=>{
         req.user=user;
         next()
     } catch (error) {
-        console.log("Access Token Expired error , jwt expired",error)
+        // console.log("Access Token Expired error , jwt expired",error)
         throw new apiError(401, error?.message || "Invalid access Token")
     }
 })
